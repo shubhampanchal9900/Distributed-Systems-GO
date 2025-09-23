@@ -219,3 +219,20 @@ func (c *Coordinator) allDoneLocked(ts []schedTask) bool {
 	}
 	return true
 }
+
+// This handles workers that crashed, hung, or are too slow to be useful.
+func (c *Coordinator) reapTimeoutsLocked(limit time.Duration) {
+	now := time.Now()
+	// Check Map tasks
+	for i := range c.maps {
+		if c.maps[i].state == stateInProgress && now.Sub(c.maps[i].startTime) > limit {
+			c.maps[i].state = stateIdle // reschedule this task for another worker
+		}
+	}
+	// Check Reduce tasks
+	for i := range c.reduces {
+		if c.reduces[i].state == stateInProgress && now.Sub(c.reduces[i].startTime) > limit {
+			c.reduces[i].state = stateIdle // reschedule
+		}
+	}
+}
