@@ -30,11 +30,11 @@ type KeyValue struct {
 }
 
 // request args i.e. the rpc requests when worker asks for a work
-type RequestArgs struct{}
+type RequestTaskArgs struct{}
 
 type RequestTaskReply struct {
 	Type    TaskType // what kind of task is this  (Map/Reduce/EXIT/nONE)
-	TaskId  int      // the unique id of the task
+	TaskID  int      // the unique id of the task
 	Files   []string // input file to map
 	NReduce int      // total number of reduce tasks in the job
 	NMap    int      // total number of map tasks in the job
@@ -42,9 +42,9 @@ type RequestTaskReply struct {
 }
 
 // reportTaskArgs is sent by a worker to coordinator when it finishes a task
-type ReportArgs struct {
+type ReportTaskArgs struct {
 	Type   TaskType // task can be map or reduce so
-	TaskId int      // id
+	TaskID int      // id
 	Ok     bool     // finished or not finished
 }
 

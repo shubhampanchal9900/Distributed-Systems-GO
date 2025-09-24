@@ -55,7 +55,7 @@ type Coordinator struct {
 	reduces []schedTask //length nReduce
 
 	//phase progress flag
-	mapPhaseOk bool //becomes true once all map tasks reach stateDone
+	mapPhaseOK bool //becomes true once all map tasks reach stateDone
 
 }
 
@@ -64,11 +64,12 @@ type Coordinator struct {
 func MakeCordinator(files []string, nReduce int) *Coordinator {
 	// we have to allocate and initialize the coordinator struct
 	c := &Coordinator{
-		nMap:    len(files),
-		nReduce: nReduce,
-		inputs:  files,
-		maps:    make([]schedTask, len(files)),
-		reduces: make([]schedTask, nReduce),
+		nMap:       len(files),
+		nReduce:    nReduce,
+		inputs:     files,
+		maps:       make([]schedTask, len(files)),
+		reduces:    make([]schedTask, nReduce),
+		mapPhaseOK: false,
 	}
 
 	//initialize map tasks one input per task
@@ -130,7 +131,7 @@ func (c *Coordinator) RequestTask(_ *RequestTaskArgs, rep *RequestTaskReply) err
 			// assign the map
 			rep.Type = TaskMap
 			rep.TaskID = t.id
-			rep.Files - t.files     //single input file
+			rep.Files = t.files     //single input file
 			rep.NReduce = c.nReduce //needed by worker to partition outputs
 			rep.NMap = c.nMap       // informationl
 			return nil              // success
@@ -139,7 +140,7 @@ func (c *Coordinator) RequestTask(_ *RequestTaskArgs, rep *RequestTaskReply) err
 		//IF no idle map available right now
 		if c.allDoneLocked(c.maps) {
 			// change flag to true i.e. map phase is DONE
-			c.mapPhaseOK - true
+			c.mapPhaseOK = true
 		} else {
 			//maps are still in progress  -->
 			rep.Type = TaskNone
@@ -246,7 +247,7 @@ func (c *Coordinator) server() {
 	_ = rpc.Register(c)
 
 	// Arrange to server RPC over HTTP
-	rpc.handleHTTP()
+	rpc.HandleHTTP()
 
 	//compute socket path and ensure no stale file exits
 	sock := coordinatorSock()
@@ -262,5 +263,5 @@ func (c *Coordinator) server() {
 	}
 
 	//serve HTTP requests in background
-	go http.Serve(1, nil)
+	go http.Serve(l, nil)
 }

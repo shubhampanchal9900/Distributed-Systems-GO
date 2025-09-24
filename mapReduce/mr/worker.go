@@ -69,7 +69,7 @@ func Worker(mapf func(string, string) []KeyValue, reducef func(string, []string)
 // we ignore the RPC success here iff coordinator is gone, jobs over anyway
 
 func report(tt TaskType, id int, ok bool) {
-	args := ReportTaskArgs{Type: tt, TaskID: id, OK: ok} //prepare payload
+	args := ReportTaskArgs{Type: tt, TaskID: id, Ok: ok} //prepare payload
 	rep := ReportTaskReply{}                             // empty reply struct
 	_ = call("Coordinator.RepotTask", &args, &rep)       //  notification
 }
@@ -95,7 +95,7 @@ func doMap(mapID int, filename string, nReduce int, mapf func(string, string) []
 	buckets := make([][]KeyValue, nReduce)
 
 	for _, kv := range kva {
-		r := ihash(kv.key) % nReduce // reduce partition for this key
+		r := ihash(kv.Key) % nReduce // reduce partition for this key
 		buckets[r] = append(buckets[r], kv)
 	}
 
